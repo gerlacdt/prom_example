@@ -16,6 +16,10 @@ lint:
 run:
 	go run ./cmd/server/main.go
 
+.PHONY=test
+test:
+	go test ${PROJECT}/...
+
 
 .PHONY=clean
 clean:
