@@ -11,6 +11,12 @@ type PostService struct {
 	posts map[int]*domain.Post
 }
 
+// New create a new PostService
+func New() *PostService {
+	posts := make(map[int]*domain.Post)
+	return &PostService{posts: posts}
+}
+
 // Post function finds the post with the given id
 func (service *PostService) Post(id int) (*domain.Post, error) {
 	if post, ok := service.posts[id]; ok {
