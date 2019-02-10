@@ -3,6 +3,7 @@ package http
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -73,5 +74,27 @@ func TestCreatePost(t *testing.T) {
 	}
 	if !reflect.DeepEqual(&p, rp) {
 		t.Errorf("Got %v, expected: %v", rp, p)
+	}
+}
+
+func TestDeletePost(t *testing.T) {
+	postService := inmemory.New()
+	p := domain.Post{ID: 100, Body: "foobar42"}
+	err := postService.CreatePost(&p)
+	if err != nil {
+		t.Fatalf("ERROR creating a post, %v", err)
+	}
+	h := New(postService)
+	// create http request
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("DELETE", fmt.Sprintf("/v1/posts/%d", p.ID), nil)
+	h.ServeHTTP(w, r)
+	resp := w.Result()
+	if resp.StatusCode != 200 {
+		t.Errorf("StatusCode, got: %d, expected: %d", resp.StatusCode, 200)
+	}
+	_, err = postService.Post(100)
+	if err == nil {
+		t.Errorf("Post should not be deleted.")
 	}
 }
