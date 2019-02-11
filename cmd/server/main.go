@@ -65,7 +65,7 @@ func main() {
 	// Instrument the handlers with all the metrics, injecting the "handler"
 	// label by currying.
 	myhandler := promhttp.InstrumentHandlerInFlight(inFlightGauge,
-		promhttp.InstrumentHandlerDuration(duration.MustCurryWith(prometheus.Labels{"handler": "myhandler"}),
+		promhttp.InstrumentHandlerDuration(duration.MustCurryWith(prometheus.Labels{"handler": "/v1/posts"}),
 			promhttp.InstrumentHandlerCounter(counter,
 				promhttp.InstrumentHandlerResponseSize(responseSize, h),
 			),
