@@ -34,7 +34,7 @@ func main() {
 			Help:    "A histogram of latencies for requests.",
 			Buckets: []float64{.25, .5, 1, 2.5, 5, 10},
 		},
-		[]string{"handler", "method"},
+		[]string{"handler", "method", "code"},
 	)
 
 	// responseSize has no labels, making it a zero-dimensional
@@ -45,7 +45,7 @@ func main() {
 			Help:    "A histogram of response sizes for requests.",
 			Buckets: []float64{200, 500, 900, 1500},
 		},
-		[]string{},
+		[]string{"code", "method"},
 	)
 
 	// Register all of the metrics in the standard registry.
