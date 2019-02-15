@@ -2,19 +2,22 @@ package inmemory
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/gerlacdt/prom_example/pkg/domain"
 )
 
 // PostService implements the corresponding service
 type PostService struct {
-	posts map[int]*domain.Post
+	posts  map[int]*domain.Post
+	nextID int
+	mutex  *sync.Mutex
 }
 
 // New create a new PostService
 func New() *PostService {
 	posts := make(map[int]*domain.Post)
-	return &PostService{posts: posts}
+	return &PostService{posts: posts, nextID: 1, mutex: &sync.Mutex{}}
 }
 
 // Post function finds the post with the given id
@@ -35,9 +38,13 @@ func (service *PostService) Posts() ([]*domain.Post, error) {
 }
 
 // CreatePost creates a post
-func (service *PostService) CreatePost(p *domain.Post) error {
+func (service *PostService) CreatePost(m *domain.Message) (*domain.Post, error) {
+	service.mutex.Lock()
+	defer service.mutex.Unlock()
+	p := &domain.Post{ID: service.nextID, Message: *m}
+	service.nextID++
 	service.posts[p.ID] = p
-	return nil
+	return p, nil
 }
 
 // DeletePost ...

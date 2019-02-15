@@ -109,18 +109,23 @@ func (h *PostHandler) createPost(w http.ResponseWriter, r *http.Request) {
 			statusCode: 400})
 		return
 	}
-	var post domain.Post
-	err = json.Unmarshal(body, &post)
+	var message domain.Message
+	err = json.Unmarshal(body, &message)
 	if err != nil {
 		handleError(w, &myError{err: fmt.Errorf("Body could not be json parsed: %s", err),
 			statusCode: 400})
 	}
-	err = h.postService.CreatePost(&post)
+	post, err := h.postService.CreatePost(&message)
 	if err != nil {
 		handleError(w, &myError{err: fmt.Errorf("Could not store post"),
 			statusCode: 500})
 	}
 	w.WriteHeader(http.StatusCreated)
+	err = json.NewEncoder(w).Encode(post)
+	if err != nil {
+		handleError(w, &myError{err: fmt.Errorf("Could not json-encode created post"),
+			statusCode: 500})
+	}
 }
 
 func (h *PostHandler) deletePost(w http.ResponseWriter, r *http.Request) {

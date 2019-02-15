@@ -16,14 +16,14 @@ import (
 
 func TestGetPost(t *testing.T) {
 	postService := inmemory.New()
-	p := domain.Post{ID: 100, Body: "foobar42"}
-	err := postService.CreatePost(&p)
+	m := domain.Message{Body: "foobar42"}
+	p, err := postService.CreatePost(&m)
 	if err != nil {
 		t.Fatalf("ERROR creating post, %s", err)
 	}
 	h := New(postService)
 	w := httptest.NewRecorder()
-	r, _ := http.NewRequest("GET", "/v1/posts/100", nil)
+	r, _ := http.NewRequest("GET", fmt.Sprintf("/v1/posts/%d", p.ID), nil)
 	h.ServeHTTP(w, r)
 	resp := w.Result()
 	body, err := ioutil.ReadAll(resp.Body)
@@ -44,20 +44,20 @@ func TestGetPost(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ERROR json unmarshalling: %s", err)
 	}
-	if !reflect.DeepEqual(p, rp) {
+	if !reflect.DeepEqual(*p, rp) {
 		t.Errorf("Got %v, expected: %v", rp, p)
 	}
 }
 
 func TestCreatePost(t *testing.T) {
 	postService := inmemory.New()
-	p := domain.Post{ID: 100, Body: "foobar42"}
+	m := domain.Message{Body: "foobar42"}
 	h := New(postService)
 	w := httptest.NewRecorder()
 
 	// create http request
 	buf := new(bytes.Buffer)
-	err := json.NewEncoder(buf).Encode(p)
+	err := json.NewEncoder(buf).Encode(m)
 	if err != nil {
 		t.Fatalf("ERROR in json body encoding, %v", err)
 	}
@@ -68,7 +68,19 @@ func TestCreatePost(t *testing.T) {
 	if resp.StatusCode != 201 {
 		t.Errorf("StatusCode, got: %d, expected: %d", resp.StatusCode, 201)
 	}
-	rp, err := postService.Post(100)
+	body, err := ioutil.ReadAll(resp.Body)
+	defer func() {
+		err := resp.Body.Close()
+		if err != nil {
+			t.Fatalf("ERROR closing resp.Body, %v", err)
+		}
+	}()
+	var p domain.Post
+	err = json.Unmarshal(body, &p)
+	if err != nil {
+		t.Fatalf("ERROR json unmarshalling: %s", err)
+	}
+	rp, err := postService.Post(p.ID)
 	if err != nil {
 		t.Errorf("New post was not stored.")
 	}
@@ -79,8 +91,8 @@ func TestCreatePost(t *testing.T) {
 
 func TestDeletePost(t *testing.T) {
 	postService := inmemory.New()
-	p := domain.Post{ID: 100, Body: "foobar42"}
-	err := postService.CreatePost(&p)
+	m := domain.Message{Body: "foobar42"}
+	p, err := postService.CreatePost(&m)
 	if err != nil {
 		t.Fatalf("ERROR creating a post, %v", err)
 	}
@@ -93,7 +105,7 @@ func TestDeletePost(t *testing.T) {
 	if resp.StatusCode != 200 {
 		t.Errorf("StatusCode, got: %d, expected: %d", resp.StatusCode, 200)
 	}
-	_, err = postService.Post(100)
+	_, err = postService.Post(p.ID)
 	if err == nil {
 		t.Errorf("Post should not be deleted.")
 	}
