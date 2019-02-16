@@ -11,8 +11,6 @@ import (
 )
 
 func main() {
-	fmt.Println("Start server2...")
-
 	inFlightGauge := prometheus.NewGauge(prometheus.GaugeOpts{
 		Name: "in_flight_requests",
 		Help: "A gauge of requests currently being served by the wrapped handler.",
@@ -77,5 +75,8 @@ func main() {
 	http.Handle("/v1/posts", myhandler)
 	http.Handle("/v1/posts/", myhandler)
 
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	// start server
+	port := ":8080"
+	fmt.Printf("Started server on port %s\n", port)
+	log.Fatal(http.ListenAndServe(port, nil))
 }
