@@ -26,3 +26,8 @@ func NewRandom() *Random {
 func (random *Random) randn(r Range) int {
 	return random.rand.Intn(r.max-r.min+1) + r.min
 }
+
+func (random *Random) randomSleep(min, max int) {
+	range2 := Range{min: min, max: max}
+	time.Sleep(time.Duration(random.randn(range2)) * time.Millisecond)
+}

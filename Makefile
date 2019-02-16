@@ -3,7 +3,10 @@ BINARY="server"
 
 
 .PHONY=build
-build: lint
+build: server-build client-build
+
+.PHONY=server-build
+server-build: lint
 	go build ${PROJECT}/cmd/server
 
 

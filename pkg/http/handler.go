@@ -14,11 +14,13 @@ import (
 // PostHandler type for all http routes
 type PostHandler struct {
 	postService domain.PostService
+	random      *Random
 }
 
 // New creates a new http PostHandler
 func New(postService domain.PostService) *PostHandler {
-	return &PostHandler{postService: postService}
+	random := NewRandom()
+	return &PostHandler{postService: postService, random: random}
 }
 
 // ServeHTTP ...
@@ -96,6 +98,8 @@ func (h *PostHandler) getPost(w http.ResponseWriter, r *http.Request) {
 		handleError(w, &myError{err: err, statusCode: 500})
 		return
 	}
+	// in order to have some fake stats for prometheues
+	h.random.randomSleep(10, 100)
 	_, err = w.Write(data)
 	if err != nil {
 		handleError(w, &myError{err: fmt.Errorf("Body could not be read"),
@@ -129,6 +133,8 @@ func (h *PostHandler) createPost(w http.ResponseWriter, r *http.Request) {
 			statusCode: 500})
 		return
 	}
+	// in order to have some fake stats for prometheues
+	h.random.randomSleep(100, 300)
 	w.WriteHeader(http.StatusCreated)
 	err = json.NewEncoder(w).Encode(post)
 	if err != nil {
