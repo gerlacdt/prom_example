@@ -35,23 +35,27 @@ func workerPOST(endpoint string) {
 	for {
 		time.Sleep(300 * time.Millisecond)
 		i++
+		start := time.Now()
 		msg := domain.Message{Body: fmt.Sprintf("foobar-%d", i)}
 		p, err := createPost(endpoint, &msg)
 		if err != nil {
 			fmt.Printf("POST post failed: %s\n", err)
 		}
-		fmt.Printf("Created id: %d\n", p.ID)
+		duration := time.Now().Sub(start)
+		fmt.Printf("Created id: %d, duration: %v\n", p.ID, duration)
 	}
 }
 
 func workerGET(endpoint string) {
 	for {
 		time.Sleep(500 * time.Millisecond)
+		start := time.Now()
 		p, err := getPost(endpoint, 1)
 		if err != nil {
 			fmt.Printf("GET post failed: %s\n", err)
 		}
-		fmt.Printf("Got id: %d\n", p.ID)
+		duration := time.Now().Sub(start)
+		fmt.Printf("Got id: %d, duration: %v\n", p.ID, duration)
 	}
 }
 
