@@ -58,13 +58,15 @@ func handleError(w http.ResponseWriter, err error) {
 	switch v := err.(type) {
 	case *myError:
 		w.WriteHeader(v.statusCode)
-		_, err := w.Write([]byte(fmt.Sprintf("{\"message\": %s}", err)))
+		msg := domain.HTTPError{Message: err.Error()}
+		err := json.NewEncoder(w).Encode(msg)
 		if err != nil {
 			w.WriteHeader(500)
 		}
 	default:
 		w.WriteHeader(500)
-		_, err := w.Write([]byte(fmt.Sprintf("{\"message\": %s}", err)))
+		msg := domain.HTTPError{Message: err.Error()}
+		err := json.NewEncoder(w).Encode(msg)
 		if err != nil {
 			// ignore
 		}
@@ -114,11 +116,18 @@ func (h *PostHandler) createPost(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		handleError(w, &myError{err: fmt.Errorf("Body could not be json parsed: %s", err),
 			statusCode: 400})
+		return
+	}
+	if message.Body == "" {
+		handleError(w, &myError{err: fmt.Errorf("Message.Body must be set"),
+			statusCode: 400})
+		return
 	}
 	post, err := h.postService.CreatePost(&message)
 	if err != nil {
 		handleError(w, &myError{err: fmt.Errorf("Could not store post"),
 			statusCode: 500})
+		return
 	}
 	w.WriteHeader(http.StatusCreated)
 	err = json.NewEncoder(w).Encode(post)

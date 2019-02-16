@@ -1,5 +1,10 @@
 package domain
 
+// HTTPError is the data structure for returning errors
+type HTTPError struct {
+	Message string `json:"message"`
+}
+
 // Message contains the contents of a blog post
 type Message struct {
 	Body string `json:"body"`
