@@ -21,6 +21,7 @@ func main() {
 
 	go workerPOST(*endpoint)
 	go workerGET(*endpoint)
+	go workerHealth(*endpoint)
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
@@ -37,12 +38,12 @@ func workerPOST(endpoint string) {
 		i++
 		start := time.Now()
 		msg := domain.Message{Body: fmt.Sprintf("foobar-%d", i)}
-		p, err := createPost(endpoint, &msg)
+		_, err := createPost(endpoint, &msg)
 		if err != nil {
-			fmt.Printf("POST post failed: %s\n", err)
+			fmt.Printf("POST /v1/posts failed: %s duration: %v\n", err, time.Since(start))
+			continue
 		}
-		duration := time.Now().Sub(start)
-		fmt.Printf("Created id: %d, duration: %v\n", p.ID, duration)
+		fmt.Printf("POST /v1/posts duration: %v\n", time.Since(start))
 	}
 }
 
@@ -50,12 +51,25 @@ func workerGET(endpoint string) {
 	for {
 		time.Sleep(500 * time.Millisecond)
 		start := time.Now()
-		p, err := getPost(endpoint, 1)
+		_, err := getPost(endpoint, 1)
 		if err != nil {
-			fmt.Printf("GET post failed: %s\n", err)
+			fmt.Printf("GET /v1/posts/:id failed: %s duration: %v\n", err, time.Since(start))
+			continue
 		}
-		duration := time.Now().Sub(start)
-		fmt.Printf("Got id: %d, duration: %v\n", p.ID, duration)
+		fmt.Printf("GET /v1/posts/:id duration: %v\n", time.Since(start))
+	}
+}
+
+func workerHealth(endpoint string) {
+	for {
+		time.Sleep(1 * time.Second)
+		start := time.Now()
+		err := getHealth(endpoint)
+		if err != nil {
+			fmt.Printf("GET /health failed: %v duration: %v\n", err, time.Since(start))
+			continue
+		}
+		fmt.Printf("GET /health duration: %v\n", time.Since(start))
 	}
 }
 
@@ -123,9 +137,6 @@ func getPost(endpoint string, id int) (*domain.Post, error) {
 			fmt.Printf("ERROR closing resp.Body, %v", err)
 		}
 	}()
-	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("Get Post failed, statusCode: %d", resp.StatusCode)
-	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
@@ -139,4 +150,27 @@ func getPost(endpoint string, id int) (*domain.Post, error) {
 		return nil, err
 	}
 	return &p, nil
+}
+
+func getHealth(endpoint string) error {
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/health", endpoint), nil)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		err := resp.Body.Close()
+		if err != nil {
+			fmt.Printf("ERROR closing resp.Body, %v", err)
+		}
+	}()
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("GET /health failed, statusCode: %d", resp.StatusCode)
+	}
+	return nil
 }

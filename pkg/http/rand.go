@@ -31,3 +31,11 @@ func (random *Random) randomSleep(min, max int) {
 	range2 := Range{min: min, max: max}
 	time.Sleep(time.Duration(random.randn(range2)) * time.Millisecond)
 }
+
+func (random *Random) randomError(chance int) bool {
+	randomInt := random.rand.Intn(100)
+	if randomInt < chance {
+		return true
+	}
+	return false
+}

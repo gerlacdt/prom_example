@@ -37,6 +37,9 @@ func (h *PostHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Handler ...
+type Handler http.Handler
+
 // Handle from http package
 func Handle(pattern string, handler http.Handler) {
 	http.DefaultServeMux.Handle(pattern, handler)
@@ -82,6 +85,11 @@ func getID(r *http.Request) (int, error) {
 }
 
 func (h *PostHandler) getPost(w http.ResponseWriter, r *http.Request) {
+	if h.random.randomError(5) {
+		handleError(w, &myError{err: fmt.Errorf("GET /v1/posts/:id Random injected Error"),
+			statusCode: 500})
+		return
+	}
 	id, err := getID(r)
 	if err != nil {
 		handleError(w, &myError{err: fmt.Errorf("ID could not be read"),
@@ -109,6 +117,12 @@ func (h *PostHandler) getPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *PostHandler) createPost(w http.ResponseWriter, r *http.Request) {
+	if h.random.randomError(10) {
+		handleError(w, &myError{err: fmt.Errorf("POST /v1/posts Random injected Error"),
+			statusCode: 500})
+		return
+	}
+
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		handleError(w, &myError{err: fmt.Errorf("Body could not be read, %s", err),

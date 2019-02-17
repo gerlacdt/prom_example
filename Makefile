@@ -21,7 +21,7 @@ lint:
 
 
 .PHONY=run
-run:
+run: build
 	go run ./cmd/server/main.go
 
 .PHONY=test
