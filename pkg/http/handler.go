@@ -107,7 +107,7 @@ func (h *PostHandler) getPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// in order to have some fake stats for prometheues
-	h.random.randomSleep(10, 100)
+	h.random.randomSleep(30, 110)
 	_, err = w.Write(data)
 	if err != nil {
 		handleError(w, &myError{err: fmt.Errorf("Body could not be read"),
@@ -148,7 +148,7 @@ func (h *PostHandler) createPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// in order to have some fake stats for prometheues
-	h.random.randomSleep(100, 300)
+	h.random.randomSleep(100, 510)
 	w.WriteHeader(http.StatusCreated)
 	err = json.NewEncoder(w).Encode(post)
 	if err != nil {
