@@ -11,6 +11,8 @@ import (
 )
 
 func main() {
+	// command prometheus queries
+	// https://www.robustperception.io/common-query-patterns-in-promql
 	inFlightGauge := prometheus.NewGauge(prometheus.GaugeOpts{
 		Name: "in_flight_requests",
 		Help: "A gauge of requests currently being served by the wrapped handler.",
@@ -30,7 +32,7 @@ func main() {
 		prometheus.HistogramOpts{
 			Name:    "http_request_duration_seconds",
 			Help:    "A histogram of latencies for requests.",
-			Buckets: []float64{.1, .3, .8, 2},
+			Buckets: []float64{.07, .1, .3, .5, 1},
 		},
 		[]string{"handler", "method", "code"},
 	)
@@ -66,7 +68,7 @@ func main() {
 		&promMiddleware{inFlightGauge: inFlightGauge, counter: counter, duration: duration, responseSize: responseSize})
 
 	// middleware := http.NewMiddleware(requestCounter, h)
-	http.Handle("/metrics", promhttp.Handler())
+	http.Handle("/metrics", promhttp.Handler()) // go statistics, see: https://povilasv.me/prometheus-go-metrics/
 	http.Handle("/health", healthHandler)
 	http.Handle("/v1/posts", promPostHandler)
 	http.Handle("/v1/posts/", promPostHandler)
