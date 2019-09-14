@@ -19,15 +19,15 @@ cat dashboard.json| jq ".panels | map(.title, .targets)"
 
 ### Generate metrics
 
-* You can generate metrics with the provided script
-  `insert_posts.sh`. All provided http-endpoints contain a random
-  component. I.e. the http-responses vary in response time and success
-  rate. Errors happened with a with a specific chance. This makes the
-  sample Grafana dashboard "more" realistic and you can differentiate
-  between errors, good requests and timeouts etc.
+You can generate metrics with the provided script
+`insert_posts.sh`. All provided http-endpoints contain a random
+component. I.e. the http-responses vary in response time and success
+rate. Errors happened with a specific chance. This makes the sample
+Grafana dashboard "more" realistic and you can differentiate between
+errors, good requests and timeouts etc.
 
-* There is also a go-client which loops endlessly over the provided
-  endpoints
+There is also a `client` which loops endlessly over the provided
+endpoints:
 
 ```bash
 # builds the server and the client
